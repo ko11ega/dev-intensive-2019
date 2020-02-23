@@ -1,6 +1,7 @@
 package ru.skillbranch.devintensive.extensions
 
 import java.lang.IllegalStateException
+import java.lang.Math.abs
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -34,81 +35,42 @@ enum class TimeUnits{
   DAY
 }
 */
+fun Date.humanizeDiff(date: Date = Date()): String {
+    val seconds = abs(this.time - date.time) / 1000
+    val minutes = 1 + (seconds - 16) / 60
+    val hours = 1 + (minutes - 16) / 60
+    return when(seconds) {
+        in 0..1 -> "только что"
+        in 1..45 -> "несколько секунд назад"
+        in 46..75 -> "минуту назад"
+        in 75..195 -> "$minutes минуты назад"
+        in 195..45*60 -> "$minutes минут назад"
+        in 45*60 .. 75*60 -> "час назад"
+        in 75*60 .. 4*60*60 -> "$hours часа назад"
+        in 4*60*60 .. 22*60*60 -> "$hours часов назад"
+        in 22*60*60 .. 26*60*60 -> "день назад"
+        in 26*60*60 .. 360*24*60*60 -> "${ hours / 24 } дней назад"
+        else -> "более года назад"
+    }
+}
+
 enum class TimeUnits(val size : Long, val russianName: Array<String>) {
 
-  SECOND(1000L, arrayOf("секунд", "секунду", "секунды")),
+    SECOND(1000L, arrayOf("секунд", "секунду", "секунды")),
 
-  MINUTE(60000L, arrayOf("минут", "минуту", "минуты")),
+    MINUTE(60000L, arrayOf("минут", "минуту", "минуты")),
 
-  HOUR(3600000L, arrayOf("часов", "час", "часа")),
+    HOUR(3600000L, arrayOf("часов", "час", "часа")),
 
-  DAY(86400000L, arrayOf("дней", "день", "дня"));
+    DAY(86400000L, arrayOf("дней", "день", "дня"));
 
-  fun plural(value:Int): String = "$value ${this.russianName[calculateEnding(value)]}"
+    fun plural(value:Int): String = "$value ${this.russianName[calculateEnding(value)]}"
 
-  private fun calculateEnding(value: Int) = when {
-    value % 100 in 5..20 -> 0
-    value % 10 in 2..4 -> 2
-    value % 10 == 1 -> 1
-    else -> 0
-  }
+    private fun calculateEnding(value: Int) = when {
+        value % 100 in 5..20 -> 0
+        value % 10 in 2..4 -> 2
+        value % 10 == 1 -> 1
+        else -> 0
+    }
 }
-
-/*
-*Date.humanizeDiff
-Необходимо реализовать extension для форматирования вывода разницы между текущим экземпляром Date
-и текущим моментом времени (или указанным в качестве аргумента) в человекообразном формате
-Реализуй extension Date.humanizeDiff(date) (значение по умолчанию текущий момент времени)
-для форматирования вывода разницы между датами в человекообразном формате, с учетом склонения числительных.
-Временные интервалы преобразований к человекообразному формату доступны в ресурсах к заданию
-Пример:
-Date().add(-2, TimeUnits.HOUR).humanizeDiff() //2 часа назад
-Date().add(-5, TimeUnits.DAY).humanizeDiff() //5 дней назад
-Date().add(2, TimeUnits.MINUTE).humanizeDiff() //через 2 минуты
-Date().add(7, TimeUnits.DAY).humanizeDiff() //через 7 дней
-Date().add(-400, TimeUnits.DAY).humanizeDiff() //более года назад
-Date().add(400, TimeUnits.DAY).humanizeDiff() //более чем через год
-*/
-//TODO написать ф-цию
-fun Date.humanizeDiff(date: Date = Date()): String {
-  //TODO("not implemented")
-  var result:String =""
-  val diff:Long = date.compareTo(Date()).toLong()
-  println("diff: $diff")
-
-  when(diff){
-    (0*SECOND)-(1*SECOND) -> result = "только что"
-    (1*SECOND) -(45*SECOND)  -> result = "несколько секунд назад"
-    (45*SECOND) -(75*SECOND) -> result = "минуту назад"
-    (75*SECOND)- (45* MINUTE) -> result = "N минут назад"
-    (45* MINUTE) - (75* MINUTE)-> result = "час назад"
-    (75* MINUTE) - (22*HOUR)-> result =  "N часов назад"
-    (22*HOUR) -(26*HOUR) -> result = "день назад"
-    (26*HOUR) -(360*DAY) -> result = "N дней назад"
-    (360*DAY)- (36000*DAY) -> result = "более года назад"
-
-
-  }
-  return result
-}
-
-/*
-0с - 1с "только что"
-
-1с - 45с "несколько секунд назад"
-
-45с - 75с "минуту назад"
-
-75с - 45мин "N минут назад"
-
-45мин - 75мин "час назад"
-
-75мин 22ч "N часов назад"
-
-22ч - 26ч "день назад"
-
-26ч - 360д "N дней назад"
-
->360д "более года назад"
- */
 
