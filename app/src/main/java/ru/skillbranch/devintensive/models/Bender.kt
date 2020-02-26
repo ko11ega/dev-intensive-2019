@@ -1,7 +1,7 @@
 package ru.skillbranch.devintensive.models
 
 class Bender (var status:Status = Status.NORMAL, var question:Question = Question.NAME) {
-
+    var errorCounter:Int =0
     fun askQuestion():String = when(question){
         Question.NAME -> Question.NAME.question
         Question.PROFESSION -> Question.PROFESSION.question
@@ -12,15 +12,23 @@ class Bender (var status:Status = Status.NORMAL, var question:Question = Questio
     }
 
     fun listenAnswer(answer:String):Pair<String,Triple<Int,Int, Int>> {
-        return if(question.answers.contains(answer)){
-            question = question.nextQuestion()
-            "Отлично - это правильный ответ!\n${question.question}" to status.color
-        }else{
+        if (question == Question.IDLE) return "${question.question}" to status.color
 
-            status = status.nextStatus()
-            "Это не правильный ответ!\n" +
-                    "${question.question}" to status.color
+        var message = ""//question.validateAnswer(answer)
+        if (message.isEmpty()) {
+            if (question.answers.contains(answer.toLowerCase())) {
+                message = "Отлично - ты справился"
+                question = question.nextQuestion()
+            } else {
+                status = status.nextStatus()
+                if (status == Status.NORMAL) {
+                    question = Question.NAME
+                    message = "Это неправильный ответ. Давай все по новой"
+                }
+                else message = "Это неправильный ответ"
+            }
         }
+        return "${message}\n${question.question}" to status.color
     }
 
 
@@ -28,7 +36,7 @@ class Bender (var status:Status = Status.NORMAL, var question:Question = Questio
         NORMAL(Triple(255,255,255)),
         WARNING(Triple(255,120,0)),
         DANGER(Triple(255,60,60)),
-        CRITICAL(Triple(255,255,0));
+        CRITICAL(Triple(255,0,0));
 
         fun nextStatus():Status{
             return if(this.ordinal < values().lastIndex){
@@ -37,6 +45,7 @@ class Bender (var status:Status = Status.NORMAL, var question:Question = Questio
                 values()[0]
             }
         }
+
     }
 
 
@@ -63,6 +72,38 @@ class Bender (var status:Status = Status.NORMAL, var question:Question = Questio
 
         abstract fun nextQuestion(): Question
     }
+
+/*
+Bender.listenAnswer (negative case)
+Необходимо реализовать метод listenAnswer класса Bender, принимающий в качестве аргумента ответ пользователя
+и возвращающий Pair, содержащую текст ошибки и цвет следующего статуса экземпляра класса Bender
+Реализуй метод listenAnswer со следующей сигнатурой listenAnswer(answer: String): Pair>.
+
+Вопросы и верные ответы, а также значения цветов статусов, прикреплены к ресурсам урока
+
+Требования к методу:
+При вводе неверного ответа изменить текущий статус на следующий статус (status = status.nextStatus()),
+вернуть "Это неправильный ответ\n${question.question}" to status.color и изменить цвет ImageView (iv_bender)
+на цвет status.color (метод setColorFilter(color,"MULTIPLY"))
+При вводе неверного ответа более 3 раз сбросить состояние сущности Bender на значение по умолчанию
+(status = Status.NORMAL, question = Question.NAME) и вернуть
+"Это неправильный ответ. Давай все по новой\n${question.question}" to status.color и
+изменить цвет ImageView (iv_bender) на цвет status.color
+Необходимо сохранять состояние экземпляра класса Bender при пересоздании
+Activity (достаточно сохранить Status, Question)
+
+Пример:
+//Как меня зовут? #NORMAL(Triple(255, 255, 255))
+benderObj.listenAnswer("Fry") //Это неправильный ответ\nКак меня зовут? #WARNING(Triple(255, 120, 0))
+
+//Мой серийный номер? #CRITICAL(Triple(255, 0, 0))
+benderObj.listenAnswer("0000000") //Это неправильный ответ. Давай все по новой\nКак меня зовут? #NORMAL(Triple(255, 255, 255))
+
+//Как меня зовут? #DANGER(Triple(255, 60, 60))
+benderObj.listenAnswer("Fry") //Это неправильный ответ\nКак меня зовут? #CRITICAL(Triple(255, 0, 0))
+//onPause() -> onStop() -> onDestroy() -> onCreate()
+//Как меня зовут? #CRITICAL(Triple(255, 0, 0))
+ */
 
 
 }
